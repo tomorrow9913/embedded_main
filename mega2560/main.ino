@@ -30,6 +30,9 @@ void ShowMenu() {
   GLCD.DrawLine(0, 53, 127, 53);
   GLCD.CursorToXY(0, 56);
   GLCD.print("  pay  lis  day  all");
+
+  // 메뉴 선택
+  GLCD.DrawRoundRect(8 + menu * 30, 55, 25, 9, 2);
 }
 
 void ShowList() {
@@ -48,8 +51,7 @@ void ShowList() {
   }
 }
 
-
-void setup() {
+void InitGLCD() {
   Serial.begin(9600);
   for(int i = 14; i < 18; i ++) {
     pinMode(i, INPUT);
@@ -57,21 +59,30 @@ void setup() {
   
   GLCD.Init();
   GLCD.SelectFont(System5x7);
-  
-  
+}
+
+void InitData() {
   for(int i = 0; i < 10; i ++) {
     product[i].num = i + 1;
     product[i].name = String(product[i].name + (i + 1));
   }
 }
 
+void setup() {
+  InitGLCD();
+  InitData();
+}
+
 void loop() {
-  
+  GLCD.Init();
+
   ShowMenu();
   ShowList();
 
+  // 버튼 처리
   if(digitalRead(BTN_UP)) {
     line ++;
+    line %= 10;
   }
   else if(digitalRead(BTN_DOWN)) {
     line --;
@@ -85,10 +96,6 @@ void loop() {
     menu ++;
     menu %= 4;
   }
-  GLCD.DrawRoundRect(8 + menu * 30, 55, 25, 9, 2);
 
-  line %= 10;
-  delay(100);
-
-  GLCD.Init();
+  delay(50);
 }
