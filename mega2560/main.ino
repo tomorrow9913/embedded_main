@@ -3,6 +3,9 @@
 #include <openGLCD_Config.h>
 #include <String.h>
 
+#include <Wire.h>
+#define SLAVE 4 // 슬레이브 주소
+
 #define  BTN_UP    14
 #define  BTN_DOWN  15
 #define  BTN_LEFT  16
@@ -19,6 +22,25 @@ Product product[10];
 int line = 0;
 int menu = 1;
 
+
+// 기본 데이터 설정
+void InitData() {
+  for(int i = 0; i < 10; i ++) {
+    product[i].num = i + 1;
+    product[i].name = String(product[i].name + (i + 1));
+  }
+}
+
+// GLCD 화면 출력
+void InitGLCD() {
+  Serial.begin(9600);
+  for(int i = 14; i < 18; i ++) {
+    pinMode(i, INPUT);
+  }
+  
+  GLCD.Init();
+  GLCD.SelectFont(System5x7);
+}
 
 void ShowMenu() {
   // 첫 줄
@@ -51,26 +73,50 @@ void ShowList() {
   }
 }
 
-void InitGLCD() {
-  Serial.begin(9600);
-  for(int i = 14; i < 18; i ++) {
-    pinMode(i, INPUT);
-  }
-  
-  GLCD.Init();
-  GLCD.SelectFont(System5x7);
+
+
+
+// I2C 통신 (mega2560 - uno)
+void InitI2C(){
+  Wire.begin(4);
+  Wire.onReceive(receiveEvent);
+
+  Serial.println("Serial Port Connected!");
 }
 
-void InitData() {
-  for(int i = 0; i < 10; i ++) {
-    product[i].num = i + 1;
-    product[i].name = String(product[i].name + (i + 1));
+void sendWire(char ch) {
+  Serial.print("SEND: ");
+  Serial.println(ch);
+  
+  Wire.beginTransmission(SLAVE);
+  Wire.write(ch);
+  Wire.endTransmission();
+}
+
+void sendWire(const char* str) {
+  for (; str != '\0'; ++str) {
+    sendWire(*str);
   }
 }
+
+void receiveEvent(int howMany) {
+  Serial.print("RECV: ");
+  
+  while (1 < Wire.available()) {
+    char c = Wire.read();
+    Serial.print(c);
+  }
+  
+  char x = Wire.read();
+  Serial.println(x);
+}
+
+
 
 void setup() {
   InitGLCD();
   InitData();
+  InitI2C();
 }
 
 void loop() {
@@ -97,5 +143,18 @@ void loop() {
     menu %= 4;
   }
 
+  // I2C통신 READ
+  if (Serial.available()) {
+    sendWire(Serial.read());
+  }
+
   delay(50);
+}
+
+
+// 시리얼로 들어온 메시지 처리
+void serialEvent(){
+    //Serial.write(Serial.read());
+    sendWire(Serial.read());
+    delay(10);
 }
