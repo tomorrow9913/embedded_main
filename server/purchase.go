@@ -5,17 +5,17 @@ import (
 )
 
 func createPurchase(c *fiber.Ctx) error {
-	return c.SendString("create purchase");
+	return c.SendString("create purchase")
 }
 
 func readPurchase(c *fiber.Ctx) error {
-	return c.SendString("read purchase");
+	return c.SendString("read purchase")
 }
 
 func updatePurchase(c *fiber.Ctx) error {
-	return c.SendString("update purchase");
+	return c.SendString("update purchase")
 }
 
 func deletePurchase(c *fiber.Ctx) error {
-	return c.SendString("delete purchase");
+	return c.SendString("delete purchase")
 }

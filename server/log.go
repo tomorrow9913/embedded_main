@@ -5,17 +5,17 @@ import (
 )
 
 func createLog(c *fiber.Ctx) error {
-	return c.SendString("create log");
+	return c.SendString("create log")
 }
 
 func readLog(c *fiber.Ctx) error {
-	return c.SendString("read log");
+	return c.SendString("read log")
 }
 
 func updateLog(c *fiber.Ctx) error {
-	return c.SendString("update log");
+	return c.SendString("update log")
 }
 
 func deleteLog(c *fiber.Ctx) error {
-	return c.SendString("delete log");
+	return c.SendString("delete log")
 }
