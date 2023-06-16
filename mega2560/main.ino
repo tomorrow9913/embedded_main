@@ -6,10 +6,16 @@
 #include <Wire.h>
 #define SLAVE 4 // 슬레이브 주소
 
-#define  BTN_UP    14
-#define  BTN_DOWN  15
-#define  BTN_LEFT  16
-#define  BTN_RIGHT 17
+#define BTN_DOWN  14
+#define BTN_UP  15
+#define BTN_LEFT  16
+#define BTN_RIGHT 17
+
+#define MENU_CART  0
+#define MENU_LIST  1
+#define MENU_DAY   2
+#define MENU_TOTAL 3 
+
 
 struct Product {
   int id = 0;
@@ -18,10 +24,17 @@ struct Product {
   int count = 10;
 };
 
-Product product[2];
+
+Product product[10];
 int listNum = 0;
-int listMax = 2;
-int menu = 1;
+int listMax = 10;
+
+int menu = MENU_CART;
+
+
+int cart[10];
+int cartNum = 0;
+int cartMax = 5;
 
 
 // 기본 데이터 설정
@@ -29,6 +42,12 @@ void InitData() {
   for(int i = 0; i < listMax; i ++) {
     product[i].id = i + 1;
     product[i].name = String(product[i].name + (i + 1));
+  }
+}
+
+void InitCart() {
+  for(int i = 0; i < cartMax; i ++) {
+    cart[i] = (2 * i) % listMax;
   }
 }
 
@@ -75,6 +94,23 @@ void ShowList() {
 }
 
 
+void ShowCart() {
+  for(int i = 0; i < ((cartMax < 4) ? cartMax : 4); i ++ ) {
+    GLCD.CursorToXY(2, i * 11 + 11);
+    GLCD.print(i + cartNum + 1);
+
+    GLCD.CursorToXY(20, i * 11 + 11);
+    GLCD.print(product[cart[i + cartNum]].name);
+
+    GLCD.CursorToXY(70, i * 11 + 11);
+    GLCD.print(product[cart[i + cartNum]].price);
+
+    GLCD.CursorToXY(110, i * 11 + 11);
+    GLCD.print(product[cart[i + cartNum]].count);
+  }
+}
+
+
 
 // I2C 통신 (mega2560 - uno)
 void InitI2C(){
@@ -116,6 +152,7 @@ void receiveEvent(int howMany) {
 void setup() {
   InitGLCD();
   InitData();
+  InitCart();
   InitI2C();
 }
 
@@ -123,16 +160,38 @@ void loop() {
   GLCD.Init();
 
   ShowMenu();
-  ShowList();
+
+  if(menu == MENU_CART) {
+    ShowCart();
+
+    // 버튼 처리
+    if(digitalRead(BTN_UP) && cartNum < cartMax - 4) {
+      cartNum ++;
+    }
+    else if(digitalRead(BTN_DOWN) && cartNum > 0) {
+      cartNum --;
+    }
+  }
+  else if(menu == MENU_LIST) {
+    ShowList(); 
+
+    // 버튼 처리
+    if(digitalRead(BTN_UP) && listNum < listMax - 4) {
+      listNum ++;
+    }
+    else if(digitalRead(BTN_DOWN) && listNum > 0) {
+      listNum --;
+    }
+  }
+  else if(menu == MENU_DAY) {
+    
+  }
+  else if(menu == MENU_TOTAL) {
+    
+  }
 
   // 버튼 처리
-  if(digitalRead(BTN_UP) && listNum < listMax - 4) {
-    listNum ++;
-  }
-  else if(digitalRead(BTN_DOWN) && listNum > 0) {
-    listNum --;
-  }
-  else if(!digitalRead(BTN_LEFT)) {
+  if(!digitalRead(BTN_LEFT)) {
     menu --;
     if(menu < 0) menu = 3;
   }
