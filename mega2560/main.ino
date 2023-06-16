@@ -12,21 +12,22 @@
 #define  BTN_RIGHT 17
 
 struct Product {
-  int num = 0;
+  int id = 0;
   String name = "non";
-  int price = 10000;
+  int price = 1000;
   int count = 10;
 };
 
-Product product[10];
-int line = 0;
+Product product[2];
+int listNum = 0;
+int listMax = 2;
 int menu = 1;
 
 
 // 기본 데이터 설정
 void InitData() {
-  for(int i = 0; i < 10; i ++) {
-    product[i].num = i + 1;
+  for(int i = 0; i < listMax; i ++) {
+    product[i].id = i + 1;
     product[i].name = String(product[i].name + (i + 1));
   }
 }
@@ -58,21 +59,20 @@ void ShowMenu() {
 }
 
 void ShowList() {
-  for(int i = 0; i < 4; i ++) {
+  for(int i = 0; i < ((listMax < 4) ? listMax : 4); i ++ ) {
     GLCD.CursorToXY(2, i * 11 + 11);
-    GLCD.print(product[(i + line)% 10].num);
+    GLCD.print(product[i + listNum].id);
 
     GLCD.CursorToXY(20, i * 11 + 11);
-    GLCD.print(product[(i + line)% 10].name);
+    GLCD.print(product[i + listNum].name);
 
     GLCD.CursorToXY(70, i * 11 + 11);
-    GLCD.print(product[(i + line)% 10].price);
+    GLCD.print(product[i + listNum].price);
 
     GLCD.CursorToXY(110, i * 11 + 11);
-    GLCD.print(product[(i + line)% 10].count);
+    GLCD.print(product[i + listNum].count);
   }
 }
-
 
 
 
@@ -126,13 +126,11 @@ void loop() {
   ShowList();
 
   // 버튼 처리
-  if(digitalRead(BTN_UP)) {
-    line ++;
-    line %= 10;
+  if(digitalRead(BTN_UP) && listNum < listMax - 4) {
+    listNum ++;
   }
-  else if(digitalRead(BTN_DOWN)) {
-    line --;
-    if(line < 0) line = 9;
+  else if(digitalRead(BTN_DOWN) && listNum > 0) {
+    listNum --;
   }
   else if(!digitalRead(BTN_LEFT)) {
     menu --;
