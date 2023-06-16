@@ -33,9 +33,9 @@ func createApp() *fiber.App {
 	// User
 	user := app.Group("/user")
 	user.Post("/", createUser)
-	user.Get("/", readUser)
-	user.Patch("/", updateUser)
-	user.Delete("/", deleteUser)
+	user.Get("/:id", readUser)
+	user.Patch("/:id", updateUser)
+	user.Delete("/:id", deleteUser)
 
 	// Purchase
 	purchase := app.Group("/purchase")
@@ -67,7 +67,10 @@ func setupDB() {
 		panic(err)
 	}
 
-	db.AutoMigrate(&model.Item{})
+	db.AutoMigrate(
+		&model.Item{},
+		&model.User{},
+	)
 
 	DB = db
 }
