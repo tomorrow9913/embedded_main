@@ -3,14 +3,18 @@
 #include <openGLCD_Config.h>
 #include <String.h>
 #include <ArduinoJson.h>
+
+// I2C통신
 #include <Wire.h>
 #define SLAVE 4  // 슬레이브 주소
 
+// 버튼 번호
 #define BTN_DOWN 14
 #define BTN_UP 15
 #define BTN_LEFT 16
 #define BTN_RIGHT 17
 
+// 메뉴 번호
 #define MENU_CART 0
 #define MENU_LIST 1
 #define MENU_TOTAL 2
@@ -44,6 +48,7 @@ int cartMax = 5;
 Transaction total[10];
 int totalNum = 0;
 int totalMax = 3;
+
 
 // 기본 데이터 설정
 void InitData() {
@@ -138,8 +143,8 @@ void InitI2C() {
 }
 
 void sendWire(char ch) {
-  Serial.print("SEND: ");
-  Serial.println(ch);
+  //Serial.print("SEND: ");
+  Serial.print(ch);
 
   Wire.beginTransmission(SLAVE);
   Wire.write(ch);
@@ -150,10 +155,11 @@ void sendWire(const char* str) {
   for (; str != '\0'; ++str) {
     sendWire(*str);
   }
+  sendWire('\n');
 }
 
 void receiveEvent(int howMany) {
-  Serial.print("RECV: ");
+  //Serial.print("RECV: ");
 
   while (1 < Wire.available()) {
     char c = Wire.read();
@@ -161,7 +167,8 @@ void receiveEvent(int howMany) {
   }
 
   char x = Wire.read();
-  Serial.println(x);
+  if(x == '\n') Serial.println();
+  else Serial.print(x);
 }
 
 
@@ -201,7 +208,7 @@ void loop() {
   }
 
   // 버튼 처리
-  if (!digitalRead(BTN_LEFT) && menu > 0) {
+  if (!EXAMP(BTN_LEFT) && menu > 0) {
     menu--;
   } else if (!digitalRead(BTN_RIGHT) && menu < 2) {
     menu++;
