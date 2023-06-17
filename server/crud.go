@@ -26,6 +26,19 @@ func createData[T any](c *fiber.Ctx) error {
 	return c.SendString("create data")
 }
 
+func readAllData[T any](c *fiber.Ctx) error {
+	// Read data from DB
+	var data []T
+	if r := DB.Find(&data); r.Error != nil {
+		return r.Error
+	}
+
+	// Response
+	return c.JSON(fiber.Map{
+		"data": data,
+	})
+}
+
 func readData[T any](c *fiber.Ctx) error {
 	// Get id
 	id := c.Params("id")

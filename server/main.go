@@ -68,6 +68,7 @@ func createApp() *fiber.App {
 	item := app.Group("/item")
 	item.Use(auth)
 	item.Post("/", createData[models.Item])
+	item.Get("/", readAllData[models.Item])
 	item.Get("/:id", readData[models.Item])
 	item.Patch("/", updateData[models.Item])
 	item.Put("/", updateAllData[models.Item])
