@@ -1,5 +1,23 @@
 // MEGA2560
 
+#include <SoftwareSerial.h>
+#include <string.h>
+#include <ArduinoJson.h>
+
+
+void sendWire(char ch) {
+  Serial.print(ch);
+  Serial1.write(ch);
+}
+
+void sendWire(const char* str) {
+  for (int i = 0; i < strlen(str); i++) {
+    sendWire(str[i]);
+  }
+  sendWire('\n');
+}
+
+
 void setup() {
   Serial.begin(9600);
   Serial1.begin(9600);
@@ -16,3 +34,4 @@ void loop() {
     Serial1.write(Serial.read());
   }
 }
+

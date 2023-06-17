@@ -1,12 +1,10 @@
+// mega2560
 #include <openGLCD.h>
 #include <openGLCD_Buildinfo.h>
 #include <openGLCD_Config.h>
 #include <String.h>
 #include <ArduinoJson.h>
-
-// I2C통신
-#include <Wire.h>
-#define SLAVE 4  // 슬레이브 주소
+#include <SoftwareSerial.h>
 
 // 버튼 번호
 #define BTN_DOWN 14
@@ -19,8 +17,40 @@
 #define MENU_LIST 1
 #define MENU_TOTAL 2
 
+bool dataInit = false;
+
+char* reqItem = "http -a admin:admin get :3000/item --pretty=none --print=b";
+
+// Server 통신용
+void sendServer(char ch) {
+  // Serial.print(ch);
+  // ss.write(ch);
+  Serial.write(ch);
+}
+
+void sendServer(const char* str) {
+  for (int i = 0; i < strlen(str); i++) {
+    sendServer(str[i]);
+  }
+  sendServer('\n');
+}
+
+// Uno 통신용 
+void sendWire(char ch) {
+  Serial.print(ch);
+  Serial1.write(ch);
+}
+
+void sendWire(const char* str) {
+  for (int i = 0; i < strlen(str); i++) {
+    sendWire(str[i]);
+  }
+  sendWire('\n');
+}
+
 
 struct Product {
+  String id = "";
   String name = "non";
   int price = 1000;
   int count = 10;
@@ -50,13 +80,6 @@ int totalNum = 0;
 int totalMax = 3;
 
 
-// 기본 데이터 설정
-void InitData() {
-  for (int i = 0; i < listMax; i++) {
-    product[i].name = String(product[i].name + (i + 1));
-  }
-}
-
 void InitCart() {
   for (int i = 0; i < cartMax; i++) {
     mycart[i].productItemId = (2 * i) % listMax;
@@ -71,7 +94,6 @@ void InitTotal() {
 
 // GLCD 화면 출력
 void InitGLCD() {
-  Serial.begin(9600);
   for (int i = 14; i < 18; i++) {
     pinMode(i, INPUT);
   }
@@ -133,57 +155,76 @@ void ShowCart() {
 }
 
 
-
-// I2C 통신 (mega2560 - uno)
-void InitI2C() {
-  Wire.begin(4);
-  Wire.onReceive(receiveEvent);
-
-  Serial.println("Serial Port Connected!");
-}
-
-void sendWire(char ch) {
-  //Serial.print("SEND: ");
-  Serial.print(ch);
-
-  Wire.beginTransmission(SLAVE);
-  Wire.write(ch);
-  Wire.endTransmission();
-}
-
-void sendWire(const char* str) {
-  for (; str != '\0'; ++str) {
-    sendWire(*str);
-  }
-  sendWire('\n');
-}
-
-void receiveEvent(int howMany) {
-  //Serial.print("RECV: ");
-
-  while (1 < Wire.available()) {
-    char c = Wire.read();
-    Serial.print(c);
+// 기본 데이터 설정
+void InitData() {
+  String json;
+  // 수신된 데이터를 String으로 수집
+  while (Serial.available()) {
+    char ch = Serial.read();
+    json += ch;
+    delay(1);
   }
 
-  char x = Wire.read();
-  if(x == '\n') Serial.println();
-  else Serial.print(x);
+  //Serinal.println(json);
+  const size_t CAPACITY = JSON_ARRAY_SIZE(200);
+  StaticJsonDocument<CAPACITY> doc;
+
+  DeserializationError error = deserializeJson(doc, json);
+
+  if (error) {
+    Serial.print("Deserialization error: ");
+    Serial.println(error.c_str());
+    return;
+  }
+
+  int i = 0;
+  
+  JsonArray data = doc["data"];
+  for(const JsonObject& item : data) {
+    const char* id = item["Id"];
+    const char* name = item["Name"];
+    int price = item["Price"];
+    int count = item["Count"];
+
+    product[i].id = String(id);
+    product[i].name = String(name);
+    product[i].price = price;
+    product[i].count = count;
+    i ++;
+  }
+  listMax = i;
+  //sendWire(Serial.read());
 }
+
 
 
 
 void setup() {
+  Serial.begin(9600);
+  Serial1.begin(9600);
   InitGLCD();
-  InitData();
+  //InitData();
   InitCart();
-  InitI2C();
+
+  sendServer(reqItem);
 }
 
 void loop() {
   GLCD.Init();
 
   ShowMenu();
+
+  if(Serial.available()) {
+    if(!dataInit) {
+      InitData();
+      dataInit = true;
+    }
+    sendWire(Serial.read());
+  }
+  if (Serial1.available()) {
+    // UNO -> MEGA2560
+    Serial.write(Serial1.read());
+  }
 
   // 각각의 메뉴별 처리항목
   if (menu == MENU_CART) {
@@ -208,24 +249,11 @@ void loop() {
   }
 
   // 버튼 처리
-  if (!EXAMP(BTN_LEFT) && menu > 0) {
+  if (!digitalRead(BTN_LEFT) && menu > 0) {
     menu--;
   } else if (!digitalRead(BTN_RIGHT) && menu < 2) {
     menu++;
   }
 
-  // I2C통신 READ
-  if (Serial.available()) {
-    sendWire(Serial.read());
-  }
-
   delay(50);
-}
-
-
-// 시리얼로 들어온 메시지 처리
-void serialEvent() {
-  //Serial.write(Serial.read());
-  sendWire(Serial.read());
-  delay(10);
 }
