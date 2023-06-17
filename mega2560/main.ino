@@ -2,26 +2,32 @@
 #include <openGLCD_Buildinfo.h>
 #include <openGLCD_Config.h>
 #include <String.h>
-
+#include <ArduinoJson.h>
 #include <Wire.h>
-#define SLAVE 4 // 슬레이브 주소
+#define SLAVE 4  // 슬레이브 주소
 
-#define BTN_DOWN  14
-#define BTN_UP  15
-#define BTN_LEFT  16
+#define BTN_DOWN 14
+#define BTN_UP 15
+#define BTN_LEFT 16
 #define BTN_RIGHT 17
 
-#define MENU_CART  0
-#define MENU_LIST  1
-#define MENU_DAY   2
-#define MENU_TOTAL 3 
+#define MENU_CART 0
+#define MENU_LIST 1
+#define MENU_TOTAL 2
 
 
 struct Product {
-  int id = 0;
   String name = "non";
   int price = 1000;
   int count = 10;
+};
+
+struct Cart {
+  int productItemId = 0;
+};
+
+struct Transaction {
+  Cart* cart;
 };
 
 
@@ -31,33 +37,40 @@ int listMax = 10;
 
 int menu = MENU_CART;
 
-
-int cart[10];
+Cart mycart[10];
 int cartNum = 0;
 int cartMax = 5;
 
+Transaction total[10];
+int totalNum = 0;
+int totalMax = 3;
 
 // 기본 데이터 설정
 void InitData() {
-  for(int i = 0; i < listMax; i ++) {
-    product[i].id = i + 1;
+  for (int i = 0; i < listMax; i++) {
     product[i].name = String(product[i].name + (i + 1));
   }
 }
 
 void InitCart() {
-  for(int i = 0; i < cartMax; i ++) {
-    cart[i] = (2 * i) % listMax;
+  for (int i = 0; i < cartMax; i++) {
+    mycart[i].productItemId = (2 * i) % listMax;
+  }
+}
+
+void InitTotal() {
+  for (int i = 0; i < totalMax; i++) {
+    total[i].cart = mycart;
   }
 }
 
 // GLCD 화면 출력
 void InitGLCD() {
   Serial.begin(9600);
-  for(int i = 14; i < 18; i ++) {
+  for (int i = 14; i < 18; i++) {
     pinMode(i, INPUT);
   }
-  
+
   GLCD.Init();
   GLCD.SelectFont(System5x7);
 }
@@ -70,17 +83,21 @@ void ShowMenu() {
 
   // 끝 줄
   GLCD.DrawLine(0, 53, 127, 53);
-  GLCD.CursorToXY(0, 56);
-  GLCD.print("  pay  lis  day  all");
+  GLCD.CursorToXY(10, 56);
+  GLCD.print("CART");
+  GLCD.CursorToXY(52, 56);
+  GLCD.print("LIST");
+  GLCD.CursorToXY(91, 56);
+  GLCD.print("TOTAL");
 
   // 메뉴 선택
-  GLCD.DrawRoundRect(8 + menu * 30, 55, 25, 9, 2);
+  GLCD.DrawRoundRect(5 + menu * 42, 55, 33, 9, 2);
 }
 
 void ShowList() {
-  for(int i = 0; i < ((listMax < 4) ? listMax : 4); i ++ ) {
+  for (int i = 0; i < ((listMax < 4) ? listMax : 4); i++) {
     GLCD.CursorToXY(2, i * 11 + 11);
-    GLCD.print(product[i + listNum].id);
+    GLCD.print(i + listNum + 1);
 
     GLCD.CursorToXY(20, i * 11 + 11);
     GLCD.print(product[i + listNum].name);
@@ -95,25 +112,25 @@ void ShowList() {
 
 
 void ShowCart() {
-  for(int i = 0; i < ((cartMax < 4) ? cartMax : 4); i ++ ) {
+  for (int i = 0; i < ((cartMax < 4) ? cartMax : 4); i++) {
     GLCD.CursorToXY(2, i * 11 + 11);
     GLCD.print(i + cartNum + 1);
 
     GLCD.CursorToXY(20, i * 11 + 11);
-    GLCD.print(product[cart[i + cartNum]].name);
+    GLCD.print(product[mycart[i + cartNum].productItemId].name);
 
     GLCD.CursorToXY(70, i * 11 + 11);
-    GLCD.print(product[cart[i + cartNum]].price);
+    GLCD.print(product[mycart[i + cartNum].productItemId].price);
 
     GLCD.CursorToXY(110, i * 11 + 11);
-    GLCD.print(product[cart[i + cartNum]].count);
+    GLCD.print(product[mycart[i + cartNum].productItemId].count);
   }
 }
 
 
 
 // I2C 통신 (mega2560 - uno)
-void InitI2C(){
+void InitI2C() {
   Wire.begin(4);
   Wire.onReceive(receiveEvent);
 
@@ -123,7 +140,7 @@ void InitI2C(){
 void sendWire(char ch) {
   Serial.print("SEND: ");
   Serial.println(ch);
-  
+
   Wire.beginTransmission(SLAVE);
   Wire.write(ch);
   Wire.endTransmission();
@@ -137,12 +154,12 @@ void sendWire(const char* str) {
 
 void receiveEvent(int howMany) {
   Serial.print("RECV: ");
-  
+
   while (1 < Wire.available()) {
     char c = Wire.read();
     Serial.print(c);
   }
-  
+
   char x = Wire.read();
   Serial.println(x);
 }
@@ -161,43 +178,33 @@ void loop() {
 
   ShowMenu();
 
-  if(menu == MENU_CART) {
+  // 각각의 메뉴별 처리항목
+  if (menu == MENU_CART) {
     ShowCart();
 
     // 버튼 처리
-    if(digitalRead(BTN_UP) && cartNum < cartMax - 4) {
-      cartNum ++;
+    if (digitalRead(BTN_UP) && cartNum < cartMax - 4) {
+      cartNum++;
+    } else if (digitalRead(BTN_DOWN) && cartNum > 0) {
+      cartNum--;
     }
-    else if(digitalRead(BTN_DOWN) && cartNum > 0) {
-      cartNum --;
-    }
-  }
-  else if(menu == MENU_LIST) {
-    ShowList(); 
+  } else if (menu == MENU_LIST) {
+    ShowList();
 
     // 버튼 처리
-    if(digitalRead(BTN_UP) && listNum < listMax - 4) {
-      listNum ++;
+    if (digitalRead(BTN_UP) && listNum < listMax - 4) {
+      listNum++;
+    } else if (digitalRead(BTN_DOWN) && listNum > 0) {
+      listNum--;
     }
-    else if(digitalRead(BTN_DOWN) && listNum > 0) {
-      listNum --;
-    }
-  }
-  else if(menu == MENU_DAY) {
-    
-  }
-  else if(menu == MENU_TOTAL) {
-    
+  } else if (menu == MENU_TOTAL) {
   }
 
   // 버튼 처리
-  if(!digitalRead(BTN_LEFT)) {
-    menu --;
-    if(menu < 0) menu = 3;
-  }
-  else if(!digitalRead(BTN_RIGHT)) {
-    menu ++;
-    menu %= 4;
+  if (!digitalRead(BTN_LEFT) && menu > 0) {
+    menu--;
+  } else if (!digitalRead(BTN_RIGHT) && menu < 2) {
+    menu++;
   }
 
   // I2C통신 READ
@@ -210,8 +217,8 @@ void loop() {
 
 
 // 시리얼로 들어온 메시지 처리
-void serialEvent(){
-    //Serial.write(Serial.read());
-    sendWire(Serial.read());
-    delay(10);
+void serialEvent() {
+  //Serial.write(Serial.read());
+  sendWire(Serial.read());
+  delay(10);
 }
