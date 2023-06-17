@@ -19,7 +19,7 @@ int port = 3000;
 String CreateProductCmdBuilder(String productID, int price, int count){
   // target: http -a {id}:{password} {method} :{port}/{path} id={itemId} price:={price} count:={count}
   char cmdBuffer[1024] = {0};
-  sprintf(cmdBuffer, "http -a %s:%s post :3000/item id=%s price:=%d count:=%d",id, password, port, path, productID, price, count);
+  sprintf(cmdBuffer, "http -a admin:admin post :3000/item id=%s price:=%d count:=%d",, productID, price, count);
   String cmd = String(cmdBuffer);
   return cmd; 
 }
@@ -28,14 +28,14 @@ String ReadProductCmdBuilder(String productID = NULL){
   if (productID == NULL){
     // target: http -a admin:admin get :3000/item --pretty=none --print=b
     char cmdBuffer[1024] = {0};
-    sprintf(cmdBuffer, "http -a %s:%s get :3000/item --pretty=none --print=b",id, password);
+    sprintf(cmdBuffer, "http -a admin:admin get :3000/item --pretty=none --print=b");
     String cmd = String(cmdBuffer);
     return cmd;
   }
 
   // target: http -a {id}:{password} {method} :{port}/{path}/{itemID} --pretty=none --print=b 
   char cmdBuffer[1024] = {0};
-  sprintf(cmdBuffer, "http -a %s:%s get :3000/item/%s --pretty=none --print=b", userId, password, itemId);
+  sprintf(cmdBuffer, "http -a admin:admin get :3000/item/%s --pretty=none --print=b", itemId);
   String cmd = String(cmdBuffer);
   return cmd;
 }
