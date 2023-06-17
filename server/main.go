@@ -8,6 +8,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/session"
 )
@@ -47,6 +48,7 @@ func createApp() *fiber.App {
 
 	Store = session.New()
 
+	app.Use(cors.New())
 	app.Use(logger.New())
 
 	// Hello
