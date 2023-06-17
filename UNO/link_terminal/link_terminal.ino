@@ -10,6 +10,59 @@ SoftwareSerial ss(6, 7);
 
 char* req = "http -a admin:admin get :3000/item/8808024031923 --pretty=none --print=b";
 
+char* Id = "admin";
+char* pass = "admin";
+int port = 3000;
+
+String CreateProductCmdBuilder(String id, String password, String productID, int price, int count){
+  // target: http -a {id}:{password} {method} :{port}/{path} id={itemId} price:={price} count:={count}
+  char cmdBuffer[1024] = {0};
+  sprintf(cmdBuffer, "http -a %s:%s post :3000/item id=%s price:=%d count:=%d",id, password, port, path, productID, price, count);
+  String cmd = String(cmdBuffer);
+  return cmd; 
+}
+
+String ReadProductCmdBuilder(String id, String password, String productID = NULL){
+  if (productID == NULL){
+    // target: http -a admin:admin get :3000/item --pretty=none --print=b
+    char cmdBuffer[1024] = {0};
+    sprintf(cmdBuffer, "http -a %s:%s get :3000/item --pretty=none --print=b",id, password);
+    String cmd = String(cmdBuffer);
+    return cmd;
+  }
+
+  // target: http -a {id}:{password} {method} :{port}/{path}/{itemID} --pretty=none --print=b 
+  char cmdBuffer[1024] = {0};
+  sprintf(cmdBuffer, "http -a %s:%s get :3000/item/%s --pretty=none --print=b", userId, password, itemId);
+  String cmd = String(cmdBuffer);
+  return cmd;
+}
+
+String UpdateProductCmdBuilder(String id, String password, String productID, int price = NULL, int count = NULL){
+  if(price == NULL || count == NULL){
+    // http -a admin:admin patch :3000/item id=${상품 고유번호} price:=${상품 가격} count:=${ 상품 개수}
+    String cmd = "http -a admin:admin patch :3000/item";
+    if (productID) cmd += " id=" + productID;
+    if (price) cmd += " price:=" + price;
+    if (count) cmd += " count:=" + count;
+    cmd += " --pretty=none --print=b"
+      
+    return cmd;
+  }
+  // target: http -a admin:admin put :3000/item id=${상품 고유번호} price:=${상품 가격} count:=${상품 개수}
+  char cmdBuffer[1024] = {0};
+  sprintf(cmdBuffer, "http -a admin:admin put :3000/item id=%s price:=%d count:=%d --pretty=none --print=b", productID, price, count);
+  String cmd = String(cmdBuffer);
+  return cmd;
+}
+
+String DeleteProductCmdBuilder(String id, String password, String productID){
+  // target: http -a {id}:{password} {method} :{port}/{path}/{itemID} --pretty=none --print=b 
+  char cmdBuffer[1024] = {0};
+  sprintf(cmdBuffer, "http -a admin:admin delete :3000/item/%s", itemId);
+  String cmd = String(cmdBuffer);
+  return cmd;
+}
 
 void sendWire(char ch) {
   Serial.print(ch);
