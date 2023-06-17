@@ -1,7 +1,6 @@
 package models
 
 type User struct {
-	Id uint        `gorm:"primaryKey"`
+	Id string        `gorm:"primaryKey"`
 	Balance int
-	Logs []Log
 }

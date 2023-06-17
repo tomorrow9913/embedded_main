@@ -7,5 +7,5 @@ type Purchase struct {
 	Session uint
 	CreatedAt time.Time
 	Count int
-	ItemID uint
+	ItemID string
 }
