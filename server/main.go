@@ -17,6 +17,7 @@ import (
 var (
 	DB *gorm.DB
 	Store *session.Store
+	SyncData map[string]interface{}
 )
 
 func hello(c *fiber.Ctx) error {
@@ -93,6 +94,11 @@ func createApp() *fiber.App {
 	purchase.Delete("/item/:id", removePurchaseItem)
 	purchase.Get("/sign/:user", signPurchase)
 
+	// Session Sync
+	sync := app.Group("/sync")
+	sync.Post("/:id", postSync)
+	sync.Get("/:id", getSync)
+
 	// Log
 	log := app.Group("/log")
 	item.Use(auth)
@@ -113,6 +119,9 @@ func createApp() *fiber.App {
 }
 
 func main() {
+	// Make synd data
+	SyncData = make(map[string]interface{})
+
 	// Get flags
 	var addr string
 	flag.StringVar(&addr, "addr", "localhost:3000", "Server address and port")
