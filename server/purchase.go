@@ -124,7 +124,7 @@ func addPurchaseItem(c *fiber.Ctx) error {
 
 	// Set data
 	purchase.Id = 0
-	purchase.Session = uint(sessionID.(int64))
+	purchase.Session = sessionID.(string)
 
 	// Check item id
 	var item models.Item
@@ -164,7 +164,7 @@ func removePurchaseItem(c *fiber.Ctx) error {
 	}
 
 	// Check data owner
-	if uint(sessionID.(int64)) != purchase.Session {
+	if sessionID.(string) != purchase.Session {
 		return c.Status(fiber.StatusForbidden).SendString("Session Error: wrong owner")
 	}
 

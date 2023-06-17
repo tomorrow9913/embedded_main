@@ -4,7 +4,7 @@ import "time"
 
 type Purchase struct {
 	Id uint `gorm:"primaryKey"`
-	Session uint
+	Session string
 	CreatedAt time.Time
 	Count int
 	ItemID string
