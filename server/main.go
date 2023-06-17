@@ -61,6 +61,9 @@ func createApp() *fiber.App {
 	// Hello
 	app.Get("/hello", hello)
 
+	// Static
+	app.Static("/", "./static")
+
 	// Item
 	item := app.Group("/item")
 	item.Use(auth)
