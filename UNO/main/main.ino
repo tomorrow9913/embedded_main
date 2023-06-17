@@ -31,7 +31,6 @@ SoftwareSerial s(5,6);
 
 
 void sendWire(char ch) {
-  //Serial.print("SEND: ");
   Serial.print(ch);
   
   Wire.beginTransmission(SLAVE);
@@ -47,8 +46,6 @@ void sendWire(const char* str) {
 }
 
 void receiveEvent(int howMany) {
-  //Serial.print("RECV: ");
-  
   while (1 < Wire.available()) {
     char c = Wire.read();
     Serial.print(c);
