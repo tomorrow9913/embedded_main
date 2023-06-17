@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"fmt"
 	"time"
 	"strconv"
 	"server/models"
@@ -18,6 +19,7 @@ func createPurchaseSession(c *fiber.Ctx) error {
 	// Get timestamp
 	now := time.Now()
 	sessionID := now.UnixNano()
+
 	// Set session id
 	session.Set("purchase", sessionID)
 
@@ -124,7 +126,7 @@ func addPurchaseItem(c *fiber.Ctx) error {
 
 	// Set data
 	purchase.Id = 0
-	purchase.Session = sessionID.(string)
+	purchase.Session = fmt.Sprint(sessionID)
 
 	// Check item id
 	var item models.Item
@@ -164,7 +166,7 @@ func removePurchaseItem(c *fiber.Ctx) error {
 	}
 
 	// Check data owner
-	if sessionID.(string) != purchase.Session {
+	if fmt.Sprint(sessionID) != purchase.Session {
 		return c.Status(fiber.StatusForbidden).SendString("Session Error: wrong owner")
 	}
 
