@@ -10,32 +10,26 @@ SoftwareSerial ss(6, 7);
 
 char* req = "http -a admin:admin get :3000/item/8808024031923 --pretty=none --print=b";
 
-char* Id = "admin";
-char* pass = "admin";
-int port = 3000;
-
-
 /////// Item ///////
 String CreateProductCmdBuilder(String productID, int price, int count){
   // target: http -a {id}:{password} {method} :{port}/{path} id={itemId} price:={price} count:={count}
   char cmdBuffer[1024] = {0};
-  sprintf(cmdBuffer, "http -a admin:admin post :3000/item id=%s price:=%d count:=%d",, productID, price, count);
+  sprintf(cmdBuffer, "http -a admin:admin post :3000/item id=%s price:=%d count:=%d --pretty=none --print=b", productID, price, count);
   String cmd = String(cmdBuffer);
   return cmd; 
 }
 
-String ReadProductCmdBuilder(String productID = NULL){
-  if (productID == NULL){
+String ReadProductCmdBuilder(String productID = ""){
+  if (productID == ""){
     // target: http -a admin:admin get :3000/item --pretty=none --print=b
     char cmdBuffer[1024] = {0};
     sprintf(cmdBuffer, "http -a admin:admin get :3000/item --pretty=none --print=b");
-    String cmd = String(cmdBuffer);
-    return cmd;
+    return String(cmdBuffer);
   }
 
   // target: http -a {id}:{password} {method} :{port}/{path}/{itemID} --pretty=none --print=b 
   char cmdBuffer[1024] = {0};
-  sprintf(cmdBuffer, "http -a admin:admin get :3000/item/%s --pretty=none --print=b", itemId);
+  sprintf(cmdBuffer, "http -a admin:admin get :3000/item/%s --pretty=none --print=b", productID);
   String cmd = String(cmdBuffer);
   return cmd;
 }
@@ -47,9 +41,7 @@ String UpdateProductCmdBuilder(String productID, int price = NULL, int count = N
     if (productID) cmd += " id=" + productID;
     if (price) cmd += " price:=" + price;
     if (count) cmd += " count:=" + count;
-    cmd += " --pretty=none --print=b"
-      
-    return cmd;
+    return cmd + " --pretty=none --print=b";  
   }
   // target: http -a admin:admin put :3000/item id=${상품 고유번호} price:=${상품 가격} count:=${상품 개수}
   char cmdBuffer[1024] = {0};
@@ -59,18 +51,133 @@ String UpdateProductCmdBuilder(String productID, int price = NULL, int count = N
 }
 
 String DeleteProductCmdBuilder(String productID){
-  // target: http -a {id}:{password} {method} :{port}/{path}/{itemID} --pretty=none --print=b 
+  // target: http -a {id}:{password} {method} :{port}/{path}/{itemID} —pretty=none —print=b 
   char cmdBuffer[1024] = {0};
-  sprintf(cmdBuffer, "http -a admin:admin delete :3000/item/%s", itemId);
+  sprintf(cmdBuffer, "http -a admin:admin delete :3000/item/%s --pretty=none --print=b", productID);
   String cmd = String(cmdBuffer);
   return cmd;
 }
 
 /////// User ///////
-String CreateUserCmdBuilder(){
+String CreateUserCmdBuilder(String cardId, int balance){
+  // target: http -a admin:admin post :3000/user id=${사용자 카드번호} balance:=${잔액}
   char cmdBuffer[1024] = {0};
-
+  sprintf(cmdBuffer, "http -a admin:admin post :3000/user id=%s balance:=%d --pretty=none --print=b", cardId, balance);
+  String cmd = String(cmdBuffer);
+  return cmd;
 }
+
+String ReadUserCmdBuilder(String cardId){
+  // target: http -a admin:admin post :3000/user id=${사용자 카드번호} balance:=${잔액}
+  char cmdBuffer[1024] = {0};
+  sprintf(cmdBuffer, "http -a admin:admin get :3000/user/%d --pretty=none --print=b", cardId);
+  String cmd = String(cmdBuffer);
+  return cmd;
+}
+
+String UpdateUserCmdBuilder(String cardId, int balance){
+  char cmdBuffer[1024] = {0};
+  sprintf(cmdBuffer, "http -a admin:admin patch :3000/user id=%s balance:=%d --pretty=none --print=b", cardId, balance);
+  String cmd = String(cmdBuffer);
+  return cmd;
+}
+
+String DeleteUserCmdBuilder(String cardId){
+  char cmdBuffer[1024] = {0};
+  sprintf(cmdBuffer, "http -a admin:admin delete :3000/user/%s --pretty=none --print=b", cardId);
+  String cmd = String(cmdBuffer);
+  return cmd;
+}
+
+///////// Sync /////////
+String SyncCmdBuilder(String PurchaseId){
+  // target: http get :3000/sync/${고유번호}
+  char cmdBuffer[1024] = {0};
+  sprintf(cmdBuffer, "http get :3000/sync/%s --session=./session.json --pretty=none --print=b", PurchaseId);
+  String cmd = String(cmdBuffer);
+  return cmd;
+}
+
+///////// Purchase /////////
+String ReadPurchaseCmdBuilder(){
+  char cmdBuffer[1024] = {0};
+  sprintf(cmdBuffer, "http --session=./session.json get :3000/purchase --pretty=none --print=b");
+  String cmd = String(cmdBuffer);
+  return cmd;
+}
+
+String DeletePurchaseCmdBuilder(){
+  char cmdBuffer[1024] = {0};
+  sprintf(cmdBuffer, "http --session=./session.json delete :3000/purchase --pretty=none --print=b");
+  String cmd = String(cmdBuffer);
+  return cmd;
+}
+
+String DeletePurchaseInItemCmdBuilder(String productID){
+  char cmdBuffer[1024] = {0};
+  sprintf(cmdBuffer, "http --session=./session.json delete :3000/purchase/item/%s --pretty=none --print=b", productID);
+  String cmd = String(cmdBuffer);
+  return cmd;
+}
+
+String SignPurchaseCmdBuilder(String cardId){
+  char cmdBuffer[1024] = {0};
+  sprintf(cmdBuffer, "http --session=./session.json get :3000/purchase/sign/%s --pretty=none --print=b", cardId);
+  String cmd = String(cmdBuffer);
+  return cmd;
+}
+
+///////// Log /////////
+String ReadLog(){
+  char cmdBuffer[1024] = {0};
+  sprintf(cmdBuffer, "http -a admin:admin get :3000/log --pretty=none --print=b");
+  String cmd = String(cmdBuffer);
+  return cmd;
+}
+
+String ReadLog(int Id){
+  char cmdBuffer[1024] = {0};
+  sprintf(cmdBuffer, "http -a admin:admin get :3000/log/%d --pretty=none --print=b", Id);
+  String cmd = String(cmdBuffer);
+  return cmd;
+}
+
+String ReadLog(String cardId){
+  char cmdBuffer[1024] = {0};
+  sprintf(cmdBuffer, "http -a admin:admin get :3000/log/user/%s --pretty=none --print=b", cardId);
+  String cmd = String(cmdBuffer);
+  return cmd;
+}
+
+///////// Etc. /////////
+String CreateEtcInfo(String key, String value){
+  char cmdBuffer[1024] = {0};
+  sprintf(cmdBuffer, "http -a admin:admin post :3000/info id=%s value=%s --pretty=none --print=b", key, value);
+  String cmd = String(cmdBuffer);
+  return cmd;
+}
+
+String ReadEtcInfo(String key){
+  char cmdBuffer[1024] = {0};
+  sprintf(cmdBuffer, "http -a admin:admin get :3000/info/%s --pretty=none --print=b", key);
+  String cmd = String(cmdBuffer);
+  return cmd;
+}
+
+String UpdateEtcInfo(String key, String value){
+  char cmdBuffer[1024] = {0};
+  sprintf(cmdBuffer, "http -a admin:admin patch :3000/info id=%s value=$%s --pretty=none --print=b", key, value);
+  String cmd = String(cmdBuffer);
+  return cmd;
+}
+
+String UpdateEtcInfo(String key){
+  char cmdBuffer[1024] = {0};
+  sprintf(cmdBuffer, "http -a admin:admin delete :3000/info/%s --pretty=none --print=b", key);
+  String cmd = String(cmdBuffer);
+  return cmd;
+}
+
 
 void sendWire(char ch) {
   Serial.print(ch);
