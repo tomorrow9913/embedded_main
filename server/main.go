@@ -2,8 +2,9 @@ package main
 
 import (
 	"log"
-	"server/models"
+	"flag"
 	"gorm.io/gorm"
+	"server/models"
 	"gorm.io/driver/sqlite"
 	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
@@ -95,10 +96,15 @@ func createApp() *fiber.App {
 }
 
 func main() {
+	// Get flags
+	var addr string
+	flag.StringVar(&addr, "addr", "localhost:3000", "Server address and port")
+	flag.Parse()
+
 	// Setup database
 	setupDB()
 
 	// Start server
 	app := createApp()
-	log.Fatal(app.Listen("localhost:3000"))
+	log.Fatal(app.Listen(addr))
 }
