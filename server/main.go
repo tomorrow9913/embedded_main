@@ -2,63 +2,22 @@ package main
 
 import (
 	"log"
-	"server/model"
+	"server/models"
 	"gorm.io/gorm"
 	"gorm.io/driver/sqlite"
+	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/session"
 )
 
 var (
 	DB *gorm.DB
+	Store *session.Store
 )
 
 func hello(c *fiber.Ctx) error {
 	return c.SendString("Hello, World!")
-}
-
-func createApp() *fiber.App {
-	// Create app
-	app := fiber.New()
-
-	// Hello
-	app.Get("/hello", hello)
-
-	// Item
-	item := app.Group("/item")
-	item.Post("/", createItem)
-	item.Get("/:id", readItem)
-	item.Patch("/:id", updateItem)
-	item.Delete("/:id", deleteItem)
-
-	// User
-	user := app.Group("/user")
-	user.Post("/", createUser)
-	user.Get("/:id", readUser)
-	user.Patch("/:id", updateUser)
-	user.Delete("/:id", deleteUser)
-
-	// Purchase
-	purchase := app.Group("/purchase")
-	purchase.Post("/", createPurchase)
-	purchase.Get("/", readPurchase)
-	purchase.Patch("/", updatePurchase)
-	purchase.Delete("/", deletePurchase)
-
-	// Log
-	log := app.Group("/log")
-	log.Post("/", createLog)
-	log.Get("/", readLog)
-	log.Patch("/", updateLog)
-	log.Delete("/", deleteLog)
-
-	// Info
-	info := app.Group("/info")
-	info.Post("/", createInfo)
-	info.Get("/", readInfo)
-	info.Patch("/", updateInfo)
-	info.Delete("/", deleteInfo)
-
-	return app
 }
 
 func setupDB() {
@@ -68,11 +27,71 @@ func setupDB() {
 	}
 
 	db.AutoMigrate(
-		&model.Item{},
-		&model.User{},
+		&models.Item{},
+		&models.User{},
+		&models.Purchase{},
+		&models.Log{},
+		&models.Info{},
 	)
 
 	DB = db
+}
+
+func createApp() *fiber.App {
+	// Create app
+	app := fiber.New(fiber.Config{
+		JSONEncoder: json.Marshal,
+		JSONDecoder: json.Unmarshal,
+	})
+
+	Store = session.New()
+
+	app.Use(logger.New())
+
+	// Hello
+	app.Get("/hello", hello)
+
+	// Item
+	item := app.Group("/item")
+	item.Post("/", createData[models.Item])
+	item.Get("/:id", readData[models.Item])
+	item.Patch("/", updateData[models.Item])
+	item.Put("/", updateAllData[models.Item])
+	item.Delete("/:id", deleteData[models.Item])
+
+	// User
+	user := app.Group("/user")
+	user.Post("/", createData[models.User])
+	user.Get("/:id", readData[models.User])
+	user.Patch("/", updateData[models.User])
+	user.Put("/", updateAllData[models.User])
+	user.Delete("/:id", deleteData[models.User])
+
+	// Purchase
+	purchase := app.Group("/purchase")
+	purchase.Post("/", createPurchaseSession)
+	purchase.Get("/", readPurchase)
+	purchase.Get("/:id", readPurchaseByUser)
+	purchase.Delete("/", deletePurchaseSession)
+	purchase.Post("/item", addPurchaseItem)
+	purchase.Delete("/item/:id", removePurchaseItem)
+	purchase.Get("/sign/:user", signPurchase)
+
+	// Log
+	log := app.Group("/log")
+	log.Get("/", readLog)
+	log.Get("/:id", readLogByID)
+	log.Get("/user/:id", readLogByUser)
+
+	// Info
+	info := app.Group("/info")
+	info.Post("/", createData[models.Info])
+	info.Get("/:id", readData[models.Info])
+	info.Patch("/", updateData[models.Info])
+	info.Put("/", updateAllData[models.Info])
+	info.Delete("/:id", deleteData[models.Info])
+
+	return app
 }
 
 func main() {

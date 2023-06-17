@@ -1,7 +1,8 @@
-package model
+package models
 
 type Item struct {
 	Id uint    `gorm:"primaryKey"`
 	Price int
-	TotalStock int
+	Count int
+	Purchases []Purchase
 }
