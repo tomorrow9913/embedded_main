@@ -11,6 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/session"
+	"github.com/gofiber/fiber/v2/middleware/basicauth"
 )
 
 var (
@@ -51,11 +52,18 @@ func createApp() *fiber.App {
 	app.Use(cors.New())
 	app.Use(logger.New())
 
+	auth := basicauth.New(basicauth.Config{
+		Users: map[string]string{
+			"admin": "admin",
+		},
+	})
+
 	// Hello
 	app.Get("/hello", hello)
 
 	// Item
 	item := app.Group("/item")
+	item.Use(auth)
 	item.Post("/", createData[models.Item])
 	item.Get("/:id", readData[models.Item])
 	item.Patch("/", updateData[models.Item])
@@ -64,6 +72,7 @@ func createApp() *fiber.App {
 
 	// User
 	user := app.Group("/user")
+	item.Use(auth)
 	user.Post("/", createData[models.User])
 	user.Get("/:id", readData[models.User])
 	user.Patch("/", updateData[models.User])
@@ -82,12 +91,14 @@ func createApp() *fiber.App {
 
 	// Log
 	log := app.Group("/log")
+	item.Use(auth)
 	log.Get("/", readLog)
 	log.Get("/:id", readLogByID)
 	log.Get("/user/:id", readLogByUser)
 
 	// Info
 	info := app.Group("/info")
+	item.Use(auth)
 	info.Post("/", createData[models.Info])
 	info.Get("/:id", readData[models.Info])
 	info.Patch("/", updateData[models.Info])
