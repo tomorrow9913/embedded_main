@@ -10,6 +10,35 @@ SoftwareSerial ss(6, 7);
 
 char* req = "http -a admin:admin get :3000/item/8808024031923 --pretty=none --print=b";
 
+Typedef enum TypeOfCommand{
+  none,
+
+  CreateProduct,
+  ReadProduct,
+  UpdateProduct,
+  DeleteProduct,
+
+  CreateUser,
+  ReadUser,
+  UpdateUser,
+  DeleteUser,
+
+  Sync,
+
+  ReadPurchase,
+  DeletePurchase,
+  DeletePurchaseInItem,
+  SignPurchase,
+  ReadLog,
+
+  CreateEtcInfo,
+  ReadEtcInfo,
+  UpdateEtcInfo,
+  DeleteEtcInfo
+} TypeOfCommand;
+
+TypeOfCommand recentCmd = TypeOfCommand.none;
+
 /////// Item ///////
 String CreateProductCmdBuilder(String productID, int price, int count){
   // target: http -a {id}:{password} {method} :{port}/{path} id={itemId} price:={price} count:={count}
@@ -171,13 +200,13 @@ String UpdateEtcInfo(String key, String value){
   return cmd;
 }
 
-String UpdateEtcInfo(String key){
+String DeleteEtcInfo(String key){
   char cmdBuffer[1024] = {0};
   sprintf(cmdBuffer, "http -a admin:admin delete :3000/info/%s --pretty=none --print=b", key);
   String cmd = String(cmdBuffer);
   return cmd;
 }
-
+//////////////////////////////////////////////////////////////////
 
 void sendWire(char ch) {
   Serial.print(ch);
@@ -198,12 +227,14 @@ void setup() {
   pinMode(BTN, INPUT);
 }
 
+// Main ////////////////////////////////////////////////////////////////
 void loop() {
   if (Serial.available()) {
     // UNO -> MEGA2560
     ss.write(Serial.read());
   }
 
+  // Request /////////////////
   if(digitalRead(BTN)) {
     Serial.println("btn");
     sendWire(req);
@@ -229,6 +260,39 @@ void loop() {
       Serial.println(error.c_str());
       return;
     }
+
+    switch(recentCmd){
+      case TypeOfCmd.none: break;
+
+      case TypeOfCmd.CreateProduct: break;
+      case TypeOfCmd.ReadProduct: break;
+      case TypeOfCmd.UpdateProduct: break;
+      case TypeOfCmd.DeleteProduct: break;
+
+      case TypeOfCmd.CreateUser: break;
+      case TypeOfCmd.ReadUser: break;
+      case TypeOfCmd.UpdateUser: break;
+      case TypeOfCmd.DeleteUser: break;
+
+      case TypeOfCmd.Sync: break;
+
+      case TypeOfCmd.ReadPurchase: break;
+      case TypeOfCmd.DeletePurchase: break;
+      case TypeOfCmd.DeletePurchaseInItem: break;
+      case TypeOfCmd.SignPurchase: break;
+
+      case TypeOfCmd.ReadLog: break;
+
+      case TypeOfCmd.CreateEtcInfo: break;
+      case TypeOfCmd.ReadEtcInfo: break;
+      case TypeOfCmd.UpdateEtcInfo: break;
+      case TypeOfCmd.DeleteEtcInfo: break;
+      
+      default: 
+      recentCmd = TypeofCmd.none;
+      break;    
+    }
+
     const char* id = doc["Id"];
     int price = doc["Price"];
     int count = doc["Count"];
