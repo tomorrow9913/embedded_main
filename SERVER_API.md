@@ -94,7 +94,7 @@ http --session=./session.json post :3000/purchase/item ItemID=${상품 고유번
 
 ### 장바구니 상품 삭제
 ```bash
-http --session=./session.json delete :3000/purchase/item/${장바구니 상품 id}
+http --session=./session.json delete :3000/purchase/item id=${상품 고유번호} count:={삭제할 상품 개수}
 ```
 
 ### 구입 진행

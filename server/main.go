@@ -91,7 +91,7 @@ func createApp() *fiber.App {
 	purchase.Get("/:id", readPurchaseByUser)
 	purchase.Delete("/", deletePurchaseSession)
 	purchase.Post("/item", addPurchaseItem)
-	purchase.Delete("/item/:id", removePurchaseItem)
+	purchase.Delete("/item", removePurchaseItem)
 	purchase.Get("/sign/:user", signPurchase)
 
 	// Session Sync

@@ -172,27 +172,39 @@ func removePurchaseItem(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusForbidden).SendString("Session Error")
 	}
 
-	// Get id
-	id := c.Params("id")
+	// Get body
+	var body models.Item
+	if err := c.BodyParser(&body); err != nil {
+		return err
+	}
 
 	// Get data from DB
 	var purchase models.Purchase
-	if r := DB.First(&purchase, id); r.Error != nil {
+	if r := DB.Where(
+			"session=? AND item_id=?",
+			sessionID,
+			body.Id,
+		).First(&purchase); r.Error != nil {
+
 		return r.Error
 	}
 
-	// Check data owner
-	if fmt.Sprint(sessionID) != purchase.Session {
-		return c.Status(fiber.StatusForbidden).SendString("Session Error: wrong owner")
-	}
+	purchase.Count -= body.Count
 
-	// Delete data from DB
-	if r := DB.Delete(&purchase); r.Error != nil {
-		return r.Error
+	if (purchase.Count > 0) {
+		if r := DB.Save(&purchase); r.Error != nil {
+			return r.Error
+		}
+
+	} else {
+		// Delete data from DB
+		if r := DB.Delete(&models.Purchase{}, purchase.Id); r.Error != nil {
+			return r.Error
+		}
 	}
 
 	// Response
-	log.Printf("delete purchase item (session: %d, id: %d)\n", sessionID, id)
+	log.Printf("delete purchase item (session: %d)\n", sessionID)
 	return c.SendString("delete purchase item")
 }
 
