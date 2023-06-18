@@ -134,9 +134,25 @@ func addPurchaseItem(c *fiber.Ctx) error {
 		return r.Error
 	}
 
-	// Create data in DB
-	if r := DB.Create(&purchase); r.Error != nil {
-		return r.Error
+	// Checking for items that already exist
+	var prevPurchase models.Purchase
+	if r := DB.Where(
+			"session=? AND item_id=?",
+			purchase.Session,
+			purchase.ItemID,
+		).First(&prevPurchase); r.Error != nil {
+
+		// Create data in DB
+		if r := DB.Create(&purchase); r.Error != nil {
+			return r.Error
+		}
+
+	} else {
+		prevPurchase.Count += purchase.Count
+
+		if r := DB.Save(&prevPurchase); r.Error != nil {
+			return r.Error
+		}
 	}
 
 	// Response
