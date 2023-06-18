@@ -21,7 +21,7 @@ void ShowDigit(int digit) {
     for(int i = 3; i >= 0; i++) {
       ShowDigit(i, digit % 10);
       digit /= 10;
-      delay(200);  
+      delay(5);  
     }
 }
 
