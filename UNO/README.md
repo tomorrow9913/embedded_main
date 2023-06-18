@@ -13,11 +13,11 @@
 
 상품 등록
 ```
-http -a admin:admin post :3000/item id=8808024031923 price:=2000 count:=20
-http -a admin:admin post :3000/item id=8801051037098 price:=1500 count:=15
-http -a admin:admin post :3000/item id=8806417027416 price:=4000 count:=5
-http -a admin:admin post :3000/item id=8801328501772 price:=500 count:=20
-http -a admin:admin post :3000/item id=8809243429225 price:=1200 count:=10
+http -a admin:admin post :3000/item id=8808024031923 name=water price:=2000 count:=20
+http -a admin:admin post :3000/item id=8801051037098 name=Tpaste price:=1500 count:=15
+http -a admin:admin post :3000/item id=8806417027416 name=tonic price:=4000 count:=5
+http -a admin:admin post :3000/item id=8801328501772 name=pack price:=500 count:=20
+http -a admin:admin post :3000/item id=8809243429225 name=wtissue price:=1200 count:=10
 ```
 
 상품 개별 조회

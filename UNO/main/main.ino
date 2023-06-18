@@ -1,6 +1,4 @@
-#include <Wire.h>
-#define SLAVE 4 // 슬레이브 주소
-
+//Uno
 #include <MFRC522.h>
 #include <MFRC522Extended.h>
 #include <deprecated.h>
@@ -177,3 +175,4 @@ void loop() {
 
   delay(500);
 }
+

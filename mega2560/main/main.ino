@@ -4,20 +4,35 @@
 #include <openGLCD_Config.h>
 #include <String.h>
 #include <ArduinoJson.h>
-#include <SoftwareSerial.h>
+//#include <SoftwareSerial.h>
+#include <LiquidCrystal.h>
+
+// LCD
+#define RS        44
+#define E         45
+#define DB4       46
+#define DB5       47
+#define DB6       48
+#define DB7       49
+
+LiquidCrystal lcd(RS, E, DB4, DB5, DB6, DB7);
+
 
 // 버튼 번호
-#define BTN_DOWN 14
-#define BTN_UP 15
-#define BTN_LEFT 16
+#define BTN_DOWN  14
+#define BTN_UP    15
+#define BTN_LEFT  16
 #define BTN_RIGHT 17
 
 // 메뉴 번호
-#define MENU_CART 0
-#define MENU_LIST 1
+#define MENU_CART  0
+#define MENU_LIST  1
 #define MENU_TOTAL 2
 
-bool dataInit = false;
+#define REQ_DEF    0
+#define REQ_LIST   1
+
+int req_mode = false;
 
 char* reqItem = "http -a admin:admin get :3000/item --pretty=none --print=b";
 
@@ -197,6 +212,17 @@ void InitData() {
 }
 
 
+void PrintTotalPrice(int Price){
+    char buffer[16];
+    lcd.setCursor(0, 0);
+    lcd.print("Total Price");
+    lcd.setCursor(0, 1);
+    sprintf(buffer, "%d", Price);
+    lcd.print(buffer);
+    lcd.setCursor(13, 1);
+    lcd.print("won");
+}
+
 
 
 void setup() {
@@ -206,26 +232,40 @@ void setup() {
   //InitData();
   InitCart();
 
-  sendServer(reqItem);
+  // LCD
+  lcd.begin(16, 2);
+
+  //sendServer(reqItem);
+  //req_mode = REQ_LIST;
 }
 
 void loop() {
-  GLCD.Init();
 
   ShowMenu();
 
-  if(Serial.available()) {
-    if(!dataInit) {
-      InitData();
-      dataInit = true;
-    }
-    // sendWire(Serial.read());
-    Serial1.write(Serial.read());
-  }
+  PrintTotalPrice(9999);
+  
   if (Serial1.available()) {
     // UNO -> MEGA2560
     Serial.write(Serial1.read());
   }
+
+  if (Serial.available()) {
+    // MEGA2560 -> UNO
+    Serial1.write(Serial.read());
+  }
+
+  // if(Serial.available()) {
+  //   if(req_mode == REQ_LIST) {
+  //     InitData();
+  //     req_mode = REQ_DEF;
+  //   }
+  //   else Serial1.write(Serial.read());
+  // }
+  // if (Serial1.available()) {
+  //   // UNO -> MEGA2560
+  //   Serial.write(Serial1.read());
+  // }
 
   // 각각의 메뉴별 처리항목
   if (menu == MENU_CART) {
@@ -234,8 +274,10 @@ void loop() {
     // 버튼 처리
     if (digitalRead(BTN_UP) && cartNum < cartMax - 4) {
       cartNum++;
+      GLCD.Init();
     } else if (digitalRead(BTN_DOWN) && cartNum > 0) {
       cartNum--;
+      GLCD.Init();
     }
   } else if (menu == MENU_LIST) {
     ShowList();
@@ -243,8 +285,10 @@ void loop() {
     // 버튼 처리
     if (digitalRead(BTN_UP) && listNum < listMax - 4) {
       listNum++;
+      GLCD.Init();
     } else if (digitalRead(BTN_DOWN) && listNum > 0) {
       listNum--;
+      GLCD.Init();
     }
   } else if (menu == MENU_TOTAL) {
   }
@@ -252,9 +296,11 @@ void loop() {
   // 버튼 처리
   if (!digitalRead(BTN_LEFT) && menu > 0) {
     menu--;
+    GLCD.Init();
   } else if (!digitalRead(BTN_RIGHT) && menu < 2) {
     menu++;
+    GLCD.Init();
   }
 
-  delay(50);
+  //delay(50);
 }

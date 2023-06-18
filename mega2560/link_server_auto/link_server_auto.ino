@@ -1,14 +1,8 @@
-#include <SoftwareSerial.h>
-
-SoftwareSerial ss(6, 7);
-
-
-
 void SendSerial(const char* str) {
   for (char* ch = str; *ch != '\0'; ++ch) {
-    ss.write(*ch);
+    Serial.write(*ch);
   }
-  ss.write('\n');
+  Serial.write('\n');
 }
 
 char* RecvSerial() {
@@ -17,8 +11,8 @@ char* RecvSerial() {
   buf[0] = ' ';
 
   while (buf[index-1] != 10) {
-    if (ss.available()) {
-      buf[index++] = ss.read();
+    if (Serial.available()) {
+      buf[index++] = Serial.read();
     }
   }
   
@@ -44,24 +38,28 @@ void SendRequest(const char* cmd, ...) {
   va_end(args);
 }
 
+
+
+
 void setup() {
   Serial.begin(9600);
-  ss.begin(9600);
+  Serial1.begin(9600);
 
-  SendRequest(":3000/item id=%s name=%s count:=%d price:=%d", "100", "test", 1, 100);
 
+  SendRequest("get :3000/item");
   const char* result = RecvSerial();
   Serial.print("RECV: ");
   Serial.println(result);
+  InitData(result);
   free(result);
 }
 
 void loop() {
-  if(Serial.available()) {
-    ss.write(Serial.read());
+  if (Serial1.available()) {
+    Serial.write(Serial1.read());
   }
 
-  if(ss.available()) {
-    Serial.write(ss.read());
+  if (Serial.available()) {
+    Serial1.write(Serial.read());
   }
 }
