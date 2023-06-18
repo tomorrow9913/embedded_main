@@ -219,7 +219,8 @@ void loop() {
       InitData();
       dataInit = true;
     }
-    sendWire(Serial.read());
+    // sendWire(Serial.read());
+    Serial1.write(Serial.read());
   }
   if (Serial1.available()) {
     // UNO -> MEGA2560
