@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="/js/quagga.min.js"></script>
+</head>
+
+<body>
+  <video id="video"></video>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: false })
+      .then((stream) => {
+        video.srcObject = stream;
+        video.play();
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  </script>
+
+  <script>
+    Quagga.init({
+      inputStream: {
+        name: "Live",
+        type: "LiveStream",
+        target: video
+      },
+      decoder: {
+        readers: [
+          "code_128_reader",
+          "ean_reader",
+          "ean_8_reader",
+          "code_39_reader",
+          "code_39_vin_reader",
+          "codabar_reader",
+          "upc_reader",
+          "upc_e_reader",
+          "i2of5_reader",
+          "2of5_reader",
+          "code_93_reader",
+        ]
+      }
+    }, function(err) {
+      if (err) {
+        console.error(err);
+        return
+      }
+
+      console.log("Initialization finished. Ready to start");
+      Quagga.start();
+
+      let lastCode = 0;
+      let count = 0;
+
+      Quagga.onDetected((data) => {
+        let current = data.codeResult.code;
+        
+        if (lastCode == current) {
+          count++;
+        } else {
+          count = 0;
+        }
+
+        if (count >= 10) {
+          console.log(`FIND: ${current}`);
+        }
+
+        lastCode = current;
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+* {
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+main {
+  width: 100%;
+  max-width: 600px;
+  height: fit-content;
+  max-height: 95%;
+
+  margin: 0 auto;
+  padding: 10px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+main > div {
+  margin: 10px 0 10px 0;
+}
+
+#camera-video {
+  width: 100%;
+  transform: scaleX(-1);
+  border: 5px solid cornflowerblue;
+}
+
+#input-item-wrap {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+}
+
+#item-list-wrap {
+  width: 100%;
+}
+
+#button-wrap {
+  width: 100%;
+}
