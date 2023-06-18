@@ -8,4 +8,5 @@ type Purchase struct {
 	CreatedAt time.Time
 	Count int
 	ItemID string
+	ItemName string
 }

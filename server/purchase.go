@@ -134,6 +134,9 @@ func addPurchaseItem(c *fiber.Ctx) error {
 		return r.Error
 	}
 
+	// Set item name
+	purchase.ItemName = item.Name
+
 	// Checking for items that already exist
 	var prevPurchase models.Purchase
 	if r := DB.Where(
