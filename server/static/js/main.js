@@ -36,42 +36,40 @@ async function initPurchase() {
 }
 
 function initScanner() {
-  navigator
-    .mediaDevices
-    .getUserMedia({
-      video: true,
-      audio: false
-    })
-    .then((stream) => {
-      video.srcObject = stream;
-      video.play();
-    })
-    .catch((err) => {
-      console.error(err);
-    });
+  navigator.mediaDevices.getUserMedia({
+    video: true,
+    audio: false
+  })
+  .then((stream) => {
+    video.srcObject = stream;
+    video.play();
+  })
+  .catch((err) => {
+    console.error(err);
+  });
 
-    Quagga.init({
-      inputStream: {
-        name: "Live",
-        type: "LiveStream",
-        target: video
-      },
-      decoder: {
-        readers: [
-          "code_128_reader",
-          "ean_reader",
-          "ean_8_reader",
-          "code_39_reader",
-          "code_39_vin_reader",
-          "codabar_reader",
-          "upc_reader",
-          "upc_e_reader",
-          "i2of5_reader",
-          "2of5_reader",
-          "code_93_reader",
-        ]
-      }
-    }, (err) => {
+  Quagga.init({
+    inputStream: {
+      name: "Live",
+      type: "LiveStream",
+      target: video
+    },
+    decoder: {
+      readers: [
+        "code_128_reader",
+        "ean_reader",
+        "ean_8_reader",
+        "code_39_reader",
+        "code_39_vin_reader",
+        "codabar_reader",
+        "upc_reader",
+        "upc_e_reader",
+        "i2of5_reader",
+        "2of5_reader",
+        "code_93_reader",
+      ]
+    }
+  }, (err) => {
       if (err) {
         console.error(err);
         return
