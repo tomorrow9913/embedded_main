@@ -15,6 +15,9 @@ import (
 )
 
 var (
+	FlagAddr string
+	FlagCertFile string
+	FlagKeyFile string
 	DB *gorm.DB
 	Store *session.Store
 	SyncData map[string]interface{}
@@ -118,19 +121,33 @@ func createApp() *fiber.App {
 	return app
 }
 
+func FlagParse() {
+	flag.StringVar(&FlagAddr, "addr", "localhost:3000", "Server address and port")
+	flag.StringVar(&FlagCertFile, "cert", "", "TLS certification file")
+	flag.StringVar(&FlagKeyFile, "key", "", "TLS key file")
+
+	flag.Parse()
+}
+
 func main() {
+	var err error
+
 	// Make synd data
 	SyncData = make(map[string]interface{})
 
 	// Get flags
-	var addr string
-	flag.StringVar(&addr, "addr", "localhost:3000", "Server address and port")
-	flag.Parse()
+	FlagParse()
 
 	// Setup database
 	setupDB()
 
 	// Start server
 	app := createApp()
-	log.Fatal(app.Listen(addr))
+	if (FlagCertFile == "" || FlagKeyFile == "") {
+		err = app.Listen(FlagAddr)
+	} else {
+		err = app.ListenTLS(FlagAddr, FlagCertFile, FlagKeyFile)
+	}
+
+	log.Fatal(err)
 }
